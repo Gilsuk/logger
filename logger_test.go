@@ -13,6 +13,12 @@ func TestNewLogger(t *testing.T) {
 	}
 }
 
+func TestReceiveMessageWhenLoggerIsClosed(t *testing.T) {
+	defaultLogger := newLogger(t, logger.Debug, logger.Discard, "")
+	done := defaultLogger.Close()
+	<-done
+}
+
 func newLogger(t *testing.T, logLevel, flags int, logPath string) logger.Logger {
 	t.Helper()
 
