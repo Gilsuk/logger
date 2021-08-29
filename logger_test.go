@@ -11,12 +11,12 @@ func TestNewLogger(t *testing.T) {
 	if _, ok := debugLogger.(*logger.DebugLogger); !ok {
 		t.Fail()
 	}
+	debugLogger.Close()
 }
 
 func TestReceiveMessageWhenLoggerIsClosed(t *testing.T) {
 	defaultLogger := newLogger(t, logger.Debug, logger.Discard, "")
-	done := defaultLogger.Close()
-	<-done
+	<-defaultLogger.Close()
 }
 
 func newLogger(t *testing.T, logLevel, flags int, logPath string) logger.Logger {
