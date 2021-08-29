@@ -7,9 +7,17 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
-	_, err := logger.New(logger.Discard, "")
+	newLogger(t, logger.Discard, "")
+}
+
+func newLogger(t *testing.T, flags int, logPath string) logger.Logger {
+	t.Helper()
+
+	logger, err := logger.New(logger.Discard, "")
 
 	if err != nil {
 		t.Fail()
 	}
+
+	return logger
 }
