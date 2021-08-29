@@ -5,3 +5,10 @@ const (
 	FileOut
 	Discard
 )
+
+const (
+	Debug = iota
+	Info
+	Warn
+	Error
+)
