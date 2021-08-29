@@ -7,8 +7,8 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
-	defaultLogger := newLogger(t, logger.Debug, logger.Discard, "")
-	if _, ok := defaultLogger.(*logger.DefaultLogger); !ok {
+	debugLogger := newLogger(t, logger.Debug, logger.Discard, "")
+	if _, ok := debugLogger.(*logger.DebugLogger); !ok {
 		t.Fail()
 	}
 }

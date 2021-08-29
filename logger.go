@@ -4,10 +4,10 @@ type Logger interface {
 	Close() <-chan (bool)
 }
 
-type DefaultLogger struct {
+type DebugLogger struct {
 }
 
-func (*DefaultLogger) Close() <-chan (bool) {
+func (*DebugLogger) Close() <-chan (bool) {
 	doneChan := make(chan bool)
 	go func() {
 		doneChan <- true
@@ -16,5 +16,5 @@ func (*DefaultLogger) Close() <-chan (bool) {
 }
 
 func New(logLevel, outputFlags int, logPath string) (Logger, error) {
-	return &DefaultLogger{}, nil
+	return &DebugLogger{}, nil
 }
