@@ -1,12 +1,15 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 type Logger interface {
 	Close() <-chan (bool)
+	Info(format string, v ...interface{})
 }
 
 type defaultLogger struct {
@@ -16,6 +19,14 @@ type defaultLogger struct {
 
 type DebugLogger struct {
 	defaultLogger
+}
+
+func (l *defaultLogger) Info(format string, v ...interface{}) {
+	if len(format) == 0 {
+		return
+	}
+	l.writer.Write([]byte(time.Now().Format("2006-01-02 15:04:05") + " [INFO]"))
+	l.writer.Write([]byte(fmt.Sprintf(format, v...) + "\n"))
 }
 
 func (l *DebugLogger) Close() <-chan (bool) {
@@ -30,7 +41,7 @@ func (l *DebugLogger) Close() <-chan (bool) {
 }
 
 func New(logLevel, outputFlags int, logPath string) (Logger, error) {
-	writers := make([]io.Writer, 3)
+	writers := make([]io.Writer, 0)
 	var fileWriter *os.File
 	writersCount := 0
 
