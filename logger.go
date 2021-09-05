@@ -21,7 +21,7 @@ type DebugLogger struct {
 	defaultLogger
 }
 
-func (l *defaultLogger) Info(format string, v ...interface{}) {
+func (l *DebugLogger) Info(format string, v ...interface{}) {
 	if len(format) == 0 {
 		return
 	}
