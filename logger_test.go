@@ -40,16 +40,19 @@ func TestInfo(t *testing.T) {
 	}()
 
 	testCases := []struct {
-		input, expect string
+		format, expect string
+		vars           []interface{}
 	}{
-		{input: "Test", expect: "[INFO]Test"},
-		{input: "Testwhitespace", expect: "[INFO]Testwhitespace"},
-		{input: "", expect: ""},
+		{format: "Test", expect: "[INFO]Test"},
+		{format: "TestFormat%sNumber%d",
+			vars:   []interface{}{"String", 10},
+			expect: "[INFO]TestFormatStringNumber10"},
+		{format: "", expect: ""},
 		{},
 	}
 
 	for _, testCase := range testCases {
-		debugLogger.Info(testCase.input)
+		debugLogger.Info(testCase.format, testCase.vars...)
 	}
 
 	logFile, err := os.Open(logPath)
@@ -63,7 +66,7 @@ func TestInfo(t *testing.T) {
 			var date, time string
 			fmt.Fscanf(logFile, "%s %s %s", &date, &time, &message)
 			if message != testCase.expect {
-				t.Errorf("input: %s, expect: %s, actual: %s", testCase.input, testCase.expect, message)
+				t.Errorf("input: %s, expect: %s, actual: %s", testCase.format, testCase.expect, message)
 			}
 		})
 	}
