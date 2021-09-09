@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gilsuk/logger"
 )
@@ -58,8 +59,12 @@ func TestInfo(t *testing.T) {
 	logFile, err := os.Open(logPath)
 	if err == nil {
 		defer logFile.Close()
+	} else {
+		t.Errorf("Can not open file")
 	}
 
+	time.Sleep(time.Second)
+	done := make(chan (bool), 1)
 	for idx, testCase := range testCases {
 		t.Run(fmt.Sprintf("%dst case in Info Test", idx+1), func(t *testing.T) {
 			var message string
@@ -68,9 +73,13 @@ func TestInfo(t *testing.T) {
 			if message != testCase.expect {
 				t.Errorf("input: %s, expect: %s, actual: %s", testCase.format, testCase.expect, message)
 			}
+			if idx+1 == len(testCases) {
+				done <- true
+			}
 		})
 	}
 
+	<-done
 	remove(t, logPath)
 }
 

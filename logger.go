@@ -15,21 +15,36 @@ type Logger interface {
 type defaultLogger struct {
 	writer io.Writer
 	file   *os.File
+	queue  chan (string)
+	done   chan (bool)
 }
 
 type DebugLogger struct {
 	defaultLogger
 }
 
+func (l *defaultLogger) addQueue(prefix, format string, v ...interface{}) {
+	l.queue <- prefix + fmt.Sprintf(format, v...)
+}
+
+func (l *defaultLogger) runLoggerDaemon() {
+	for msg := range l.queue {
+		l.writer.Write([]byte(time.Now().Format("2006-01-02 15:04:05 ")))
+		l.writer.Write([]byte(msg + "\n"))
+	}
+	l.done <- true
+}
+
 func (l *DebugLogger) Info(format string, v ...interface{}) {
 	if len(format) == 0 {
 		return
 	}
-	l.writer.Write([]byte(time.Now().Format("2006-01-02 15:04:05") + " [INFO]"))
-	l.writer.Write([]byte(fmt.Sprintf(format, v...) + "\n"))
+	go l.addQueue("[INFO]", format, v...)
 }
 
 func (l *DebugLogger) Close() <-chan (bool) {
+	close(l.queue)
+	<-l.done
 	doneChan := make(chan bool)
 	go func() {
 		if l.file != nil {
@@ -65,12 +80,17 @@ func New(logLevel, outputFlags int, logPath string) (Logger, error) {
 		writers = append(writers, io.Discard)
 	}
 
-	return &DebugLogger{
+	debugLogger := &DebugLogger{
 		defaultLogger: defaultLogger{
 			writer: io.MultiWriter(writers[:writersCount]...),
 			file:   fileWriter,
+			queue:  make(chan string, 20),
+			done:   make(chan bool),
 		},
-	}, nil
+	}
+
+	go debugLogger.runLoggerDaemon()
+	return debugLogger, nil
 }
 
 func isFlagOn(singleFlag, combinedFlag int) bool {
