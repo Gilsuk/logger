@@ -11,21 +11,21 @@ import (
 type Logger interface {
 	// Close is safe to call multiple times
 	Close() error
-	Info(format string, v ...interface{})
+	Debug(format string, v ...interface{})
 }
 
-type defaultLogger struct {
+type baseLogger struct {
 	worker    *glg.Glg
 	file      *os.File
 	closeOnce sync.Once
 }
 
 type DebugLogger struct {
-	defaultLogger
+	baseLogger
 }
 
-func (l *DebugLogger) Info(format string, v ...interface{}) {
-	l.worker.Infof(format, v...)
+func (l *DebugLogger) Debug(format string, v ...interface{}) {
+	l.worker.Debugf(format, v...)
 }
 
 func (l *DebugLogger) Close() (err error) {
@@ -63,7 +63,7 @@ func New(logLevel, outputFlags int, logPath string) (Logger, error) {
 	}
 
 	debugLogger := &DebugLogger{
-		defaultLogger: defaultLogger{
+		baseLogger: baseLogger{
 			worker: glg.New().AddWriter(io.MultiWriter(writers[:writersCount]...)).SetLevel(glg.DEBG).SetMode(glg.WRITER),
 			file:   fileWriter,
 		},

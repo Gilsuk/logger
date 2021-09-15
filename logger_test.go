@@ -10,10 +10,8 @@ import (
 
 func TestNewFileLogger(t *testing.T) {
 	logPath := "./testdata/newLoggerTest.log"
-	defaultLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
-	defer func() {
-		defaultLogger.Close()
-	}()
+	baseLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
+	defer baseLogger.Close()
 
 	logFile, err := os.Open(logPath)
 	if os.IsNotExist(err) {
@@ -24,7 +22,7 @@ func TestNewFileLogger(t *testing.T) {
 	remove(t, logPath)
 }
 
-func TestInfo(t *testing.T) {
+func TestDebug(t *testing.T) {
 	logPath := "./testdata/infoTest.log"
 	debugLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
 	defer debugLogger.Close()
@@ -42,7 +40,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		debugLogger.Info(testCase.format, testCase.vars...)
+		debugLogger.Debug(testCase.format, testCase.vars...)
 	}
 
 	logFile, err := os.Open(logPath)
@@ -53,7 +51,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	for idx, testCase := range testCases {
-		t.Run(fmt.Sprintf("%dst case in Info Test", idx+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%dst case in Debug Test", idx+1), func(t *testing.T) {
 			var logLevel, message string
 			var date, time string
 			fmt.Fscanf(logFile, "%s %s %s %s", &date, &time, &logLevel, &message)
