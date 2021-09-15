@@ -8,7 +8,7 @@ import (
 )
 
 type Logger interface {
-	Close() <-chan (bool)
+	Close() error
 	Info(format string, v ...interface{})
 }
 
@@ -42,17 +42,13 @@ func (l *DebugLogger) Info(format string, v ...interface{}) {
 	go l.addQueue("[INFO]", format, v...)
 }
 
-func (l *DebugLogger) Close() <-chan (bool) {
+func (l *DebugLogger) Close() error {
 	close(l.queue)
 	<-l.done
-	doneChan := make(chan bool)
-	go func() {
-		if l.file != nil {
-			l.file.Close()
-		}
-		doneChan <- true
-	}()
-	return doneChan
+	if l.file != nil {
+		return l.file.Close()
+	}
+	return nil
 }
 
 func New(logLevel, outputFlags int, logPath string) (Logger, error) {

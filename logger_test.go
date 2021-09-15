@@ -9,19 +9,11 @@ import (
 	"github.com/gilsuk/logger"
 )
 
-func TestNewLogger(t *testing.T) {
-	debugLogger := newLogger(t, logger.Debug, logger.Discard, "")
-	if _, ok := debugLogger.(*logger.DebugLogger); !ok {
-		t.Fail()
-	}
-	debugLogger.Close()
-}
-
 func TestNewFileLogger(t *testing.T) {
 	logPath := "./testdata/newLoggerTest.log"
 	defaultLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
 	defer func() {
-		<-defaultLogger.Close()
+		defaultLogger.Close()
 	}()
 
 	logFile, err := os.Open(logPath)
@@ -37,7 +29,7 @@ func TestInfo(t *testing.T) {
 	logPath := "./testdata/infoTest.log"
 	debugLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
 	defer func() {
-		<-debugLogger.Close()
+		debugLogger.Close()
 	}()
 
 	testCases := []struct {
@@ -81,11 +73,6 @@ func TestInfo(t *testing.T) {
 
 	<-done
 	remove(t, logPath)
-}
-
-func TestReceiveMessageWhenLoggerIsClosed(t *testing.T) {
-	defaultLogger := newLogger(t, logger.Debug, logger.Discard, "")
-	<-defaultLogger.Close()
 }
 
 func remove(t *testing.T, filePath string) {
