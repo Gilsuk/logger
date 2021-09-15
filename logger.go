@@ -19,15 +19,11 @@ type baseLogger struct {
 	closeOnce sync.Once
 }
 
-type DebugLogger struct {
-	baseLogger
-}
-
-func (l *DebugLogger) Debug(format string, v ...interface{}) {
+func (l *baseLogger) Debug(format string, v ...interface{}) {
 	l.worker.Debugf(format, v...)
 }
 
-func (l *DebugLogger) Close() (err error) {
+func (l *baseLogger) Close() (err error) {
 	l.closeOnce.Do(func() {
 		if l.file != nil {
 			err = l.file.Close()
@@ -55,14 +51,12 @@ func New(logLevel LogLevel, outputFlags Output, logPath string) (Logger, error) 
 		worker = worker.SetMode(glg.NONE)
 	}
 
-	debugLogger := &DebugLogger{
-		baseLogger: baseLogger{
-			worker: worker,
-			file:   fileWriter,
-		},
+	baseLogger := &baseLogger{
+		worker: worker,
+		file:   fileWriter,
 	}
 
-	return debugLogger, nil
+	return baseLogger, nil
 }
 
 func isFlagOn(singleFlag, combinedFlag Output) bool {

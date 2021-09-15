@@ -24,8 +24,8 @@ func TestNewFileLogger(t *testing.T) {
 
 func TestDebug(t *testing.T) {
 	logPath := "./testdata/infoTest.log"
-	debugLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
-	defer debugLogger.Close()
+	baseLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
+	defer baseLogger.Close()
 
 	testCases := []struct {
 		format, expect string
@@ -40,7 +40,7 @@ func TestDebug(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		debugLogger.Debug(testCase.format, testCase.vars...)
+		baseLogger.Debug(testCase.format, testCase.vars...)
 	}
 
 	logFile, err := os.Open(logPath)
