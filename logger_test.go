@@ -26,7 +26,7 @@ func TestNewFileLogger(t *testing.T) {
 
 	logFile, err := os.Open(logPath)
 	if os.IsNotExist(err) {
-		t.Errorf("fail to create log %w", err)
+		t.Errorf("fail to create log %v", err)
 	}
 
 	logFile.Close()
