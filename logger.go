@@ -1,54 +1,40 @@
 package logger
 
 import (
-	"fmt"
 	"io"
 	"os"
-	"time"
+	"sync"
+
+	"github.com/kpango/glg"
 )
 
 type Logger interface {
+	// Close is safe to call multiple times
 	Close() error
 	Info(format string, v ...interface{})
 }
 
 type defaultLogger struct {
-	writer io.Writer
-	file   *os.File
-	queue  chan (string)
-	done   chan (bool)
+	worker    *glg.Glg
+	file      *os.File
+	closeOnce sync.Once
 }
 
 type DebugLogger struct {
 	defaultLogger
 }
 
-func (l *defaultLogger) addQueue(prefix, format string, v ...interface{}) {
-	l.queue <- prefix + fmt.Sprintf(format, v...)
-}
-
-func (l *defaultLogger) runLoggerDaemon() {
-	for msg := range l.queue {
-		l.writer.Write([]byte(time.Now().Format("2006-01-02 15:04:05 ")))
-		l.writer.Write([]byte(msg + "\n"))
-	}
-	l.done <- true
-}
-
 func (l *DebugLogger) Info(format string, v ...interface{}) {
-	if len(format) == 0 {
-		return
-	}
-	go l.addQueue("[INFO]", format, v...)
+	l.worker.Infof(format, v...)
 }
 
-func (l *DebugLogger) Close() error {
-	close(l.queue)
-	<-l.done
-	if l.file != nil {
-		return l.file.Close()
-	}
-	return nil
+func (l *DebugLogger) Close() (err error) {
+	l.closeOnce.Do(func() {
+		if l.file != nil {
+			err = l.file.Close()
+		}
+	})
+	return
 }
 
 func New(logLevel, outputFlags int, logPath string) (Logger, error) {
@@ -78,14 +64,11 @@ func New(logLevel, outputFlags int, logPath string) (Logger, error) {
 
 	debugLogger := &DebugLogger{
 		defaultLogger: defaultLogger{
-			writer: io.MultiWriter(writers[:writersCount]...),
+			worker: glg.New().AddWriter(io.MultiWriter(writers[:writersCount]...)).SetLevel(glg.DEBG).SetMode(glg.WRITER),
 			file:   fileWriter,
-			queue:  make(chan string, 20),
-			done:   make(chan bool),
 		},
 	}
 
-	go debugLogger.runLoggerDaemon()
 	return debugLogger, nil
 }
 

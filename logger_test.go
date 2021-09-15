@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/gilsuk/logger"
 )
@@ -28,18 +27,16 @@ func TestNewFileLogger(t *testing.T) {
 func TestInfo(t *testing.T) {
 	logPath := "./testdata/infoTest.log"
 	debugLogger := newLogger(t, logger.Debug, logger.FileOut, logPath)
-	defer func() {
-		debugLogger.Close()
-	}()
+	defer debugLogger.Close()
 
 	testCases := []struct {
 		format, expect string
 		vars           []interface{}
 	}{
-		{format: "Test", expect: "[INFO]Test"},
+		{format: "Test", expect: "Test"},
 		{format: "TestFormat%sNumber%d",
 			vars:   []interface{}{"String", 10},
-			expect: "[INFO]TestFormatStringNumber10"},
+			expect: "TestFormatStringNumber10"},
 		{format: "", expect: ""},
 		{},
 	}
@@ -55,23 +52,17 @@ func TestInfo(t *testing.T) {
 		t.Errorf("Can not open file")
 	}
 
-	time.Sleep(time.Second)
-	done := make(chan (bool), 1)
 	for idx, testCase := range testCases {
 		t.Run(fmt.Sprintf("%dst case in Info Test", idx+1), func(t *testing.T) {
-			var message string
+			var logLevel, message string
 			var date, time string
-			fmt.Fscanf(logFile, "%s %s %s", &date, &time, &message)
+			fmt.Fscanf(logFile, "%s %s %s %s", &date, &time, &logLevel, &message)
 			if message != testCase.expect {
 				t.Errorf("input: %s, expect: %s, actual: %s", testCase.format, testCase.expect, message)
-			}
-			if idx+1 == len(testCases) {
-				done <- true
 			}
 		})
 	}
 
-	<-done
 	remove(t, logPath)
 }
 
