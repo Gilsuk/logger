@@ -16,4 +16,5 @@ const (
 	Info           = LogLevel(glg.INFO)
 	Warn           = LogLevel(glg.WARN)
 	Error          = LogLevel(glg.ERR)
+	Fatal          = LogLevel(glg.FATAL)
 )
