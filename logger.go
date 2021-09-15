@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"io"
 	"os"
 	"sync"
 
@@ -38,33 +37,27 @@ func (l *DebugLogger) Close() (err error) {
 }
 
 func New(logLevel LogLevel, outputFlags Output, logPath string) (Logger, error) {
-	writers := make([]io.Writer, 0)
+	worker := glg.New().SetLevel(glg.LEVEL(logLevel))
 	var fileWriter *os.File
-	writersCount := 0
 
 	if isFlagOn(FileOut, outputFlags) {
-		var err error
-		fileWriter, err = os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			return nil, err
-		}
-		writersCount++
-		writers = append(writers, fileWriter)
+		fileWriter = glg.FileWriter(logPath, 0644)
+		worker = worker.AddWriter(fileWriter)
 	}
 
-	if isFlagOn(StdOut, outputFlags) {
-		writersCount++
-		writers = append(writers, os.Stdout)
-	}
-
-	if isFlagOn(Discard, outputFlags) {
-		writersCount++
-		writers = append(writers, io.Discard)
+	if isFlagOn(StdOut, outputFlags) && isFlagOn(FileOut, outputFlags) {
+		worker = worker.SetMode(glg.BOTH)
+	} else if isFlagOn(FileOut, outputFlags) {
+		worker = worker.SetMode(glg.WRITER)
+	} else if isFlagOn(StdOut, outputFlags) {
+		worker = worker.SetMode(glg.STD)
+	} else {
+		worker = worker.SetMode(glg.NONE)
 	}
 
 	debugLogger := &DebugLogger{
 		baseLogger: baseLogger{
-			worker: glg.New().AddWriter(io.MultiWriter(writers[:writersCount]...)).SetLevel(glg.DEBG).SetMode(glg.WRITER),
+			worker: worker,
 			file:   fileWriter,
 		},
 	}
