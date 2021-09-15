@@ -37,7 +37,7 @@ func (l *DebugLogger) Close() (err error) {
 	return
 }
 
-func New(logLevel, outputFlags int, logPath string) (Logger, error) {
+func New(logLevel LogLevel, outputFlags Output, logPath string) (Logger, error) {
 	writers := make([]io.Writer, 0)
 	var fileWriter *os.File
 	writersCount := 0
@@ -72,6 +72,6 @@ func New(logLevel, outputFlags int, logPath string) (Logger, error) {
 	return debugLogger, nil
 }
 
-func isFlagOn(singleFlag, combinedFlag int) bool {
+func isFlagOn(singleFlag, combinedFlag Output) bool {
 	return singleFlag&combinedFlag != 0
 }

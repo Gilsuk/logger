@@ -74,7 +74,7 @@ func remove(t *testing.T, filePath string) {
 	})
 }
 
-func newLogger(t *testing.T, logLevel, flags int, logPath string) logger.Logger {
+func newLogger(t *testing.T, logLevel logger.LogLevel, flags logger.Output, logPath string) logger.Logger {
 	t.Helper()
 
 	logger, err := logger.New(logLevel, flags, logPath)

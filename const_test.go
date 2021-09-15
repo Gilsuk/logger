@@ -16,6 +16,6 @@ func TestOutFlags(t *testing.T) {
 	}
 }
 
-func isFlagOn(singleFlag, combinedFlag int) bool {
+func isFlagOn(singleFlag, combinedFlag logger.Output) bool {
 	return singleFlag&combinedFlag != 0
 }

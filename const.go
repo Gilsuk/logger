@@ -1,14 +1,19 @@
 package logger
 
+import "github.com/kpango/glg"
+
+type Output int
+type LogLevel glg.LEVEL
+
 const (
-	StdOut int = 1 << iota
+	StdOut Output = 1 << iota
 	FileOut
 	Discard
 )
 
 const (
-	Debug = iota
-	Info
-	Warn
-	Error
+	Debug LogLevel = LogLevel(glg.DEBG)
+	Info           = LogLevel(glg.INFO)
+	Warn           = LogLevel(glg.WARN)
+	Error          = LogLevel(glg.ERR)
 )
